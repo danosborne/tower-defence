@@ -1,29 +1,25 @@
 import React from 'react';
 import './App.css';
+import useAnimationFrame from './useAnimationFrame';
+import Enemy from './Enemy';
+import Tower from './Tower';
 
+const INITIAL_STATE = {
+  enemies: [
+    { 
+      id: 1,
+      pos: [10, 110],
+      step: 0,
+      // path: [[810, 110], [810, 510], [1210, 510]],
+      // path: [[10, 510], [510, 510], [510, 710]],
+      path: [[210, 510], [510, 310], [710, 810]],
+      speed: 1,
+      health: 10
+     }
+  ]
+};
 
-const useAnimationFrame = callback => {
-  // Use useRef for mutable variables that we want to persist
-  // without triggering a re-render on their change
-  const requestRef = React.useRef();
-  const previousTimeRef = React.useRef();
-  
-  const animate = time => {
-    if (previousTimeRef.current !== undefined) {
-      const deltaTime = time - previousTimeRef.current;
-      callback(deltaTime)
-    }
-    previousTimeRef.current = time;
-    requestRef.current = requestAnimationFrame(animate);
-  }
-  
-  React.useEffect(() => {
-    requestRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(requestRef.current);
-  }, []); // Make sure the effect runs only once
-}
-
-// Moves enemies
+// Move enemies
 function updateState(prevState) {
   return { 
     enemies: prevState.enemies.map((enemy) => {
@@ -67,30 +63,8 @@ function updateState(prevState) {
 };
 
 function App() {
-  const [state, setState] = React.useState(
-    {
-      enemies: [
-        { 
-          id: 1,
-          pos: [10, 110],
-          step: 0,
-          // path: [[810, 110], [810, 510], [1210, 510]],
-          // path: [[10, 510], [510, 510], [510, 710]],
-          path: [[210, 510], [510, 310], [710, 810]],
-          speed: 1,
-          health: 10
-         }
-      ]
-    }
-  );
-  
-  useAnimationFrame(deltaTime => {
-    // Pass on a function to the setter of the state
-    // to make sure we always have the latest state
-    setState(updateState);
-  });
-
-  // console.log('Rendering App with state', state);
+  const [state, setState] = React.useState(INITIAL_STATE);
+  useAnimationFrame(deltaTime => { setState(updateState); });
   return (
     <div className="main">
       <Tower x={110} y={10} />
@@ -101,33 +75,5 @@ function App() {
     </div>
   );
 }
-
-function Tower({x, y}) {
-  return <div
-    style={{
-      position: "absolute",
-      backgroundColor: "red",
-      
-      width: 30,
-      height: 30,
-      left: x, 
-      top: y 
-    }}
-  ></div>;
-};
-
-function Enemy({x, y}) {
-  return <div
-    style={{
-      position: "absolute",
-      backgroundColor: "green",
-      
-      width: 10,
-      height: 10,
-      left: x, 
-      top: y 
-    }}
-  ></div>;
-};
   
 export default App;
